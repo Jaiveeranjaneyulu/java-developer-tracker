@@ -9,12 +9,12 @@ import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/fireb
   4. Replace the values below with your Firebase Web App config.
 */
 const firebaseConfig = {
-  apiKey: "YOUR_API_KEY",
-  authDomain: "YOUR_PROJECT.firebaseapp.com",
-  projectId: "YOUR_PROJECT_ID",
-  storageBucket: "YOUR_PROJECT.firebasestorage.app",
-  messagingSenderId: "YOUR_SENDER_ID",
-  appId: "YOUR_APP_ID"
+  apiKey: "AIzaSyBFaP3JnXRAqua3sJszIJz8wucLcn8k1Yo",
+  authDomain: "java-developer-tracker.firebaseapp.com",
+  projectId: "java-developer-tracker",
+  storageBucket: "java-developer-tracker.firebasestorage.app",
+  messagingSenderId: "764171855041",
+  appId: "1:764171855041:web:d7b1cf6fc9852e31282040"
 };
 
 const roadmap = {
