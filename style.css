@@ -1,0 +1,62 @@
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  background: #f5f7fb;
+  color: #172033;
+}
+header {
+  background: #172033;
+  color: white;
+  padding: 22px max(18px, calc((100% - 900px)/2));
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+}
+h1 { margin: 0; font-size: 24px; }
+header p { margin: 5px 0 0; color: #b9c2d4; }
+main { max-width: 900px; margin: 20px auto; padding: 0 16px 40px; }
+.progress-card {
+  background: white; border-radius: 16px; padding: 20px;
+  box-shadow: 0 4px 18px rgba(20,30,50,.07); margin-bottom: 18px;
+}
+.progress-top { display:flex; justify-content:space-between; gap:15px; align-items:end; }
+.label { display:block; color:#697386; font-size:13px; }
+strong { display:block; font-size:32px; margin-top:3px; }
+#count { color:#697386; font-size:14px; }
+.bar { height: 10px; background:#e8ecf3; border-radius:10px; overflow:hidden; margin-top:15px; }
+#bar { height:100%; width:0%; background:#2563eb; transition:width .25s; }
+#syncStatus { font-size:12px; color:#697386; margin:10px 0 0; }
+.toolbar { display:flex; gap:10px; margin-bottom:18px; }
+input, select, button {
+  font: inherit; border:1px solid #d8deea; border-radius:10px; padding:11px 12px;
+}
+input { flex:1; min-width:0; }
+select { background:white; }
+button { cursor:pointer; }
+.secondary { background:#fff; color:#172033; }
+
+.section {
+  background:white; border-radius:16px; margin-bottom:14px;
+  overflow:hidden; box-shadow:0 3px 14px rgba(20,30,50,.05);
+}
+.section h2 { font-size:18px; margin:0; padding:18px 18px 8px; }
+.section .meta { padding:0 18px 12px; color:#697386; font-size:13px; }
+.topic {
+  display:flex; align-items:flex-start; gap:12px; padding:13px 18px;
+  border-top:1px solid #eef1f6;
+}
+.topic input[type=checkbox] { width:20px; height:20px; margin-top:1px; accent-color:#2563eb; }
+.topic label { cursor:pointer; line-height:1.4; flex:1; }
+.topic.done label { text-decoration:line-through; color:#8a93a4; }
+.empty { text-align:center; padding:35px; color:#697386; }
+
+@media (max-width:600px) {
+  header { padding:18px 16px; }
+  h1 { font-size:20px; }
+  main { margin-top:14px; }
+  .toolbar { position:sticky; top:0; z-index:2; padding:8px 0; background:#f5f7fb; }
+  .progress-top { align-items:center; }
+  strong { font-size:28px; }
+}

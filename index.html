@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Java Developer 0–1 Year Tracker</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header>
+  <div>
+    <h1>Java Developer Tracker</h1>
+    <p>0–1 Year • Job-ready roadmap</p>
+  </div>
+  <button id="resetBtn" class="secondary">Reset</button>
+</header>
+
+<main>
+  <section class="progress-card">
+    <div class="progress-top">
+      <div>
+        <span class="label">Overall Progress</span>
+        <strong id="percent">0%</strong>
+      </div>
+      <span id="count">0 / 0 completed</span>
+    </div>
+    <div class="bar"><div id="bar"></div></div>
+    <p id="syncStatus">Local progress</p>
+  </section>
+
+  <div class="toolbar">
+    <input id="search" type="search" placeholder="Search topics...">
+    <select id="filter">
+      <option value="all">All</option>
+      <option value="todo">To do</option>
+      <option value="done">Completed</option>
+    </select>
+  </div>
+
+  <div id="roadmap"></div>
+</main>
+
+<script type="module" src="app.js"></script>
+</body>
+</html>
