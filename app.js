@@ -1,20 +1,25 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js";
-import { getAuth, onAuthStateChanged, signInAnonymously } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js";
-import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
+import {
+  getAuth,
+  GoogleAuthProvider,
+  onAuthStateChanged,
+  signInWithPopup,
+  signOut
+} from "https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js";
+import {
+  getFirestore,
+  doc,
+  getDoc,
+  setDoc
+} from "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
 
-/*
-  1. Create a Firebase project.
-  2. Enable Anonymous Authentication.
-  3. Create Firestore Database.
-  4. Replace the values below with your Firebase Web App config.
-*/
 const firebaseConfig = {
-  apiKey: "YOUR_API_KEY",
-  authDomain: "YOUR_PROJECT.firebaseapp.com",
-  projectId: "YOUR_PROJECT_ID",
-  storageBucket: "YOUR_PROJECT.firebasestorage.app",
-  messagingSenderId: "YOUR_SENDER_ID",
-  appId: "YOUR_APP_ID"
+  apiKey: "AIzaSyBFaP3JnXRAqua3sJszIJz8wucLcn8k1Yo",
+  authDomain: "java-developer-tracker.firebaseapp.com",
+  projectId: "java-developer-tracker",
+  storageBucket: "java-developer-tracker.firebasestorage.app",
+  messagingSenderId: "764171855041",
+  appId: "1:764171855041:web:d7b1cf6fc9852e31282040"
 };
 
 const roadmap = {
@@ -87,81 +92,127 @@ const roadmap = {
   ]
 };
 
-let completed = JSON.parse(localStorage.getItem("javaTracker") || "{}");
-let firestoreReady = false;
-let db, userId;
-
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
-db = getFirestore(app);
+const db = getFirestore(app);
+const provider = new GoogleAuthProvider();
 
-const validConfig = !Object.values(firebaseConfig).some(v => String(v).startsWith("YOUR_"));
+let completed = JSON.parse(localStorage.getItem("javaTracker") || "{}");
+let currentUser = null;
 
-if (validConfig) {
-  onAuthStateChanged(auth, async user => {
-    if (!user) return;
-    userId = user.uid;
-    firestoreReady = true;
-    document.getElementById("syncStatus").textContent = "☁️ Sync enabled";
-    const snap = await getDoc(doc(db, "progress", userId));
-    if (snap.exists()) {
-      completed = snap.data().completed || {};
-      localStorage.setItem("javaTracker", JSON.stringify(completed));
-      render();
-    }
-  });
-  signInAnonymously(auth).catch(() => {
-    document.getElementById("syncStatus").textContent = "Local progress";
-  });
-}
-
-function save() {
-  localStorage.setItem("javaTracker", JSON.stringify(completed));
-  if (firestoreReady) {
-    setDoc(doc(db, "progress", userId), { completed }).catch(() => {});
-  }
-}
+const $ = id => document.getElementById(id);
 
 function allTopics() {
   return Object.entries(roadmap).flatMap(([section, topics]) =>
-    topics.map(topic => ({section, topic}))
+    topics.map(topic => ({ section, topic }))
   );
 }
 
+function saveLocal() {
+  localStorage.setItem("javaTracker", JSON.stringify(completed));
+}
+
+async function saveCloud() {
+  if (!currentUser) return;
+  await setDoc(doc(db, "progress", currentUser.uid), {
+    completed,
+    updatedAt: new Date().toISOString()
+  });
+}
+
+async function loadCloud(user) {
+  const snap = await getDoc(doc(db, "progress", user.uid));
+  if (snap.exists()) {
+    completed = snap.data().completed || {};
+    saveLocal();
+  } else {
+    await saveCloud();
+  }
+}
+
+async function toggleTopic(key, checked) {
+  if (checked) completed[key] = true;
+  else delete completed[key];
+
+  saveLocal();
+  render();
+
+  if (currentUser) {
+    try {
+      await saveCloud();
+      $("syncStatus").textContent = "☁️ Saved to Firebase";
+    } catch (error) {
+      console.error(error);
+      $("syncStatus").textContent = "⚠️ Local save only — Firebase error";
+    }
+  }
+}
+
+async function login() {
+  $("loginBtn").disabled = true;
+  try {
+    await signInWithPopup(auth, provider);
+  } catch (error) {
+    console.error(error);
+    $("syncStatus").textContent =
+      error.code === "auth/popup-blocked"
+        ? "⚠️ Allow popups for this site and try again."
+        : `⚠️ Sign-in failed: ${error.message}`;
+  } finally {
+    $("loginBtn").disabled = false;
+  }
+}
+
+async function logout() {
+  await signOut(auth);
+}
+
 function render() {
-  const search = document.getElementById("search").value.toLowerCase().trim();
-  const filter = document.getElementById("filter").value;
-  const container = document.getElementById("roadmap");
+  const search = $("search").value.toLowerCase().trim();
+  const filter = $("filter").value;
+  const container = $("roadmap");
   container.innerHTML = "";
 
   let visible = 0;
+
   Object.entries(roadmap).forEach(([section, topics]) => {
     const filtered = topics.filter(topic => {
-      const done = !!completed[`${section}::${topic}`];
+      const key = `${section}::${topic}`;
+      const done = !!completed[key];
       return (!search || `${section} ${topic}`.toLowerCase().includes(search))
         && (filter === "all" || (filter === "done" ? done : !done));
     });
+
     if (!filtered.length) return;
 
     const card = document.createElement("section");
     card.className = "section";
-    card.innerHTML = `<h2>${section}</h2><div class="meta">${topics.filter(t => completed[`${section}::${t}`]).length} / ${topics.length} completed</div>`;
+
+    const sectionDone = topics.filter(t => completed[`${section}::${t}`]).length;
+    card.innerHTML = `<h2>${section}</h2>
+      <div class="meta">${sectionDone} / ${topics.length} completed</div>`;
 
     filtered.forEach(topic => {
       visible++;
       const key = `${section}::${topic}`;
       const row = document.createElement("div");
       row.className = `topic ${completed[key] ? "done" : ""}`;
-      row.innerHTML = `<input type="checkbox" ${completed[key] ? "checked" : ""} aria-label="${topic}">
-                       <label>${topic}</label>`;
-      row.querySelector("input").addEventListener("change", e => {
-        completed[key] = e.target.checked;
-        if (!e.target.checked) delete completed[key];
-        save();
-        render();
-      });
+
+      const checkbox = document.createElement("input");
+      checkbox.type = "checkbox";
+      checkbox.checked = !!completed[key];
+
+      const label = document.createElement("label");
+      label.textContent = topic;
+
+      checkbox.addEventListener("change", () =>
+        toggleTopic(key, checkbox.checked)
+      );
+
+      row.append(checkbox, label);
       card.appendChild(row);
     });
+
     container.appendChild(card);
   });
 
@@ -170,18 +221,59 @@ function render() {
   const total = allTopics().length;
   const done = allTopics().filter(x => completed[`${x.section}::${x.topic}`]).length;
   const pct = total ? Math.round(done * 100 / total) : 0;
-  document.getElementById("percent").textContent = `${pct}%`;
-  document.getElementById("count").textContent = `${done} / ${total} completed`;
-  document.getElementById("bar").style.width = `${pct}%`;
+
+  $("percent").textContent = `${pct}%`;
+  $("count").textContent = `${done} / ${total} completed`;
+  $("bar").style.width = `${pct}%`;
 }
 
-document.getElementById("search").addEventListener("input", render);
-document.getElementById("filter").addEventListener("change", render);
-document.getElementById("resetBtn").addEventListener("click", () => {
-  if (confirm("Reset all Java roadmap progress?")) {
-    completed = {};
-    save();
+onAuthStateChanged(auth, async user => {
+  currentUser = user;
+
+  if (user) {
+    $("loginBtn").hidden = true;
+    $("logoutBtn").hidden = false;
+    $("userName").textContent = user.displayName || user.email || "";
+    $("syncStatus").textContent = "☁️ Loading your progress...";
+
+    try {
+      await loadCloud(user);
+      $("syncStatus").textContent = "☁️ Synced with Firebase";
+      render();
+    } catch (error) {
+      console.error(error);
+      $("syncStatus").textContent = "⚠️ Could not load Firebase data";
+    }
+  } else {
+    $("loginBtn").hidden = false;
+    $("logoutBtn").hidden = true;
+    $("userName").textContent = "";
+    $("syncStatus").textContent = "Sign in to sync progress across devices.";
     render();
   }
 });
+
+$("loginBtn").addEventListener("click", login);
+$("logoutBtn").addEventListener("click", logout);
+$("search").addEventListener("input", render);
+$("filter").addEventListener("change", render);
+
+$("resetBtn").addEventListener("click", async () => {
+  if (!confirm("Reset all Java roadmap progress?")) return;
+
+  completed = {};
+  saveLocal();
+  render();
+
+  if (currentUser) {
+    try {
+      await saveCloud();
+      $("syncStatus").textContent = "☁️ Progress reset and saved";
+    } catch (error) {
+      console.error(error);
+      $("syncStatus").textContent = "⚠️ Reset locally; Firebase save failed";
+    }
+  }
+});
+
 render();

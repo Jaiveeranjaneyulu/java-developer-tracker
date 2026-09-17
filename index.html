@@ -12,7 +12,11 @@
     <h1>Java Developer Tracker</h1>
     <p>0–1 Year • Job-ready roadmap</p>
   </div>
-  <button id="resetBtn" class="secondary">Reset</button>
+  <div class="account">
+    <span id="userName"></span>
+    <button id="loginBtn">Sign in with Google</button>
+    <button id="logoutBtn" class="secondary" hidden>Sign out</button>
+  </div>
 </header>
 
 <main>
@@ -25,7 +29,7 @@
       <span id="count">0 / 0 completed</span>
     </div>
     <div class="bar"><div id="bar"></div></div>
-    <p id="syncStatus">Local progress</p>
+    <p id="syncStatus">Sign in to sync progress across devices.</p>
   </section>
 
   <div class="toolbar">
@@ -35,6 +39,7 @@
       <option value="todo">To do</option>
       <option value="done">Completed</option>
     </select>
+    <button id="resetBtn" class="secondary">Reset</button>
   </div>
 
   <div id="roadmap"></div>

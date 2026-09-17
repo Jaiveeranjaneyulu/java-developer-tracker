@@ -8,7 +8,7 @@ body {
 header {
   background: #172033;
   color: white;
-  padding: 22px max(18px, calc((100% - 900px)/2));
+  padding: 18px max(16px, calc((100% - 900px)/2));
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -16,6 +16,8 @@ header {
 }
 h1 { margin: 0; font-size: 24px; }
 header p { margin: 5px 0 0; color: #b9c2d4; }
+.account { display:flex; align-items:center; gap:8px; flex-wrap:wrap; justify-content:flex-end; }
+#userName { font-size:13px; color:#dbe3f2; max-width:180px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 main { max-width: 900px; margin: 20px auto; padding: 0 16px 40px; }
 .progress-card {
   background: white; border-radius: 16px; padding: 20px;
@@ -33,9 +35,11 @@ input, select, button {
   font: inherit; border:1px solid #d8deea; border-radius:10px; padding:11px 12px;
 }
 input { flex:1; min-width:0; }
-select { background:white; }
+select, button { background:white; }
 button { cursor:pointer; }
-.secondary { background:#fff; color:#172033; }
+button:disabled { opacity:.6; cursor:not-allowed; }
+#loginBtn { background:#fff; color:#172033; border:0; }
+.secondary { color:#172033; }
 
 .section {
   background:white; border-radius:16px; margin-bottom:14px;
@@ -53,10 +57,12 @@ button { cursor:pointer; }
 .empty { text-align:center; padding:35px; color:#697386; }
 
 @media (max-width:600px) {
-  header { padding:18px 16px; }
+  header { padding:16px; align-items:flex-start; }
   h1 { font-size:20px; }
+  .account { flex-direction:column; align-items:flex-end; }
   main { margin-top:14px; }
   .toolbar { position:sticky; top:0; z-index:2; padding:8px 0; background:#f5f7fb; }
   .progress-top { align-items:center; }
   strong { font-size:28px; }
+  .toolbar select { max-width:110px; }
 }
